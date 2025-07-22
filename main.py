@@ -1,14 +1,14 @@
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-from sklearn.linear_model import LinearRegression
-import numpy as np
+import pandas as pd #data load and manipulation
+import seaborn as sns #plotting
+import matplotlib.pyplot as plt #plotting
+from sklearn.linear_model import LinearRegression #predicting song popularity
+import numpy as np #data selection 
 
-df = pd.read_csv("dataset.csv")
-if "Unnamed: 0" in df.columns:
+df = pd.read_csv("dataset.csv") #load dataset to dataframe(pandas)
+if "Unnamed: 0" in df.columns: #remove if existing unnamed 0 columns
     df = df.drop(columns=["Unnamed: 0"])
 
-def menu():
+def menu(): #main menu display
     print("\n🎵 Spotify Analysis Tool")
     print("1. Correlation matrix")
     print("2. Custom correlation plot (by genre)")
@@ -17,7 +17,7 @@ def menu():
     print("5. Add a new song and predict its popularity")
     print("6. Exit")
 
-def choose_genre():
+def choose_genre():#function that helps genre selection numerically
     all_genres = df['track_genre'].dropna().unique().tolist()
     print("\nAvailable genres:")
     for idx, genre in enumerate(all_genres, 1):
@@ -32,20 +32,22 @@ def choose_genre():
         except ValueError:
             print("Please enter a valid integer.")
 
-def correlation_analysis():
+def correlation_analysis(): #function that shows full correlation matrix as heatmap
+    print("\nCorrelation Matrix:")
     plt.figure(figsize=(10, 6))
     sns.heatmap(df.corr(numeric_only=True), annot=True, cmap="coolwarm")
     plt.title("Correlation Matrix")
     plt.show()
 
-def custom_correlation_plot():
-    genre_input = choose_genre()
-    genre_df = df[df['track_genre'] == genre_input]
+def custom_correlation_plot(): #lets user choose a genre and plot custom correlation plot
+    print("\nCustom Correlation Plot (by genre)")
+    genre_input = choose_genre() #by number ofc
+    genre_df = df[df['track_genre'] == genre_input] #so it filters only selected genre
     if genre_df.empty:
         print("No data found for the selected genre.")
         return
 
-    numeric_cols = genre_df.select_dtypes(include=np.number).columns.tolist()
+    numeric_cols = genre_df.select_dtypes(include=np.number).columns.tolist() #list numeric columns for spesific genre
     print("\nAvailable numeric columns in this genre:")
     for idx, col in enumerate(numeric_cols, 1):
         print(f"{idx}. {col}")
@@ -72,18 +74,22 @@ def custom_correlation_plot():
         except ValueError:
             print("Please enter a valid integer.")
 
-    corr = genre_df[[x_var, y_var]].corr().iloc[0,1]
+    corr = genre_df[[x_var, y_var]].corr().iloc[0,1] ##correlation calculation
     print(f"\nCorrelation coefficient between {x_var} and {y_var} (in genre '{genre_input}'): {corr:.2f}")
 
     max_point = genre_df.loc[(genre_df[[x_var, y_var]].apply(tuple, axis=1)).idxmax()]
     min_point = genre_df.loc[(genre_df[[x_var, y_var]].apply(tuple, axis=1)).idxmin()]
 
-    plt.figure(figsize=(8,5))
+
+#here i actually wanted to highlight the top right and bottom left points(most danceable and popular for example), but i couldn't figure out how
+    #so i just used the scatter plot to highlight the top right and bottom left points
+    plt.figure(figsize=(8,5)) 
     plt.scatter(genre_df[x_var], genre_df[y_var], alpha=0.7)
-    plt.scatter(max_point[x_var], max_point[y_var], color='green', marker='*', s=300)
+    plt.scatter(max_point[x_var], max_point[y_var], color='green', marker='*', s=300) #highlight top right (max) point
+    
     plt.text(max_point[x_var], max_point[y_var]+1,
              f"{max_point['track_name']} - {max_point['artists']}", color='green', fontsize=9, ha='center')
-    plt.scatter(min_point[x_var], min_point[y_var], color='red', marker='*', s=300)
+    plt.scatter(min_point[x_var], min_point[y_var], color='red', marker='*', s=300) #highlight bottom left (min) point
     plt.text(min_point[x_var], min_point[y_var]-4,
              f"{min_point['track_name']} - {min_point['artists']}", color='red', fontsize=9, ha='center')
     plt.xlabel(x_var)
@@ -92,7 +98,7 @@ def custom_correlation_plot():
     plt.tight_layout()
     plt.show()
 
-def dance_vs_popularity():
+def dance_vs_popularity(): #example of two variables plot for a genre
     genre_input = choose_genre()
     genre_df = df[df['track_genre'] == genre_input]
     if genre_df.empty:
@@ -116,14 +122,16 @@ def dance_vs_popularity():
     plt.tight_layout()
     plt.show()
 
-def top_songs():
+def top_songs():#lists top 10 popular songs (by popularity in the dataset)
+    print("\n🎶 Top 10 Most Popular Songs:")
     unique = df.drop_duplicates(subset=["track_name", "artists"])
     top = unique.sort_values(by="popularity", ascending=False).head(10)
     print("\n🎶 Top 10 Most Popular Songs:\n")
     for i, row in top.iterrows():
         print(f"{row['track_name']} - {row['artists']} (Popularity: {row['popularity']})")
 
-def predict_popularity():
+def predict_popularity(): #here i couldnt figure out how to make the model predict the popularity of a new song, so i just used the model to predict the popularity of the most popular song in the dataset
+    print("\n🎵 Predicting the Popularity of a New Song")
     print("\nEnter the new song details:")
     track_name = input("Track name: ")
     artists = input("Artist(s): ")
@@ -177,7 +185,7 @@ def predict_popularity():
     plt.tight_layout()
     plt.show()
 
-while True:
+while True: #simple switch case loop
     menu()
     choice = input("Your choice (1-6): ")
     match choice:
