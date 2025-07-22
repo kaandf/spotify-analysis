@@ -59,6 +59,20 @@ def predict_popularity():
     prediction = model.predict(new_data)[0]
     print(f"\n🔮 Predicted popularity: {round(prediction, 2)} / 100")
 
+    # --- Görselleştirme ---
+    plt.figure(figsize=(10, 6))
+    # Var olan şarkıları çiz
+    plt.scatter(df["danceability"], df["popularity"], alpha=0.7, label="Dataset Songs")
+    # Yeni şarkıyı farklı bir renkle ekle
+    plt.scatter([danceability], [prediction], color="red", marker="*", s=200, label="Your Song (Predicted)")
+    plt.xlabel("Danceability")
+    plt.ylabel("Popularity")
+    plt.title("Danceability vs Popularity (Yeni Şarkınız Eklenmiş)")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+
 while True:
     menu()
     choice = input("Your choice (1-5): ")
